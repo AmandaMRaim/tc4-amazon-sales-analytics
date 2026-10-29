@@ -1,6 +1,6 @@
 # Pipeline de dados
 
-Versão organizada do tratamento de dados do Tech Challenge. Reúne em um só lugar o código que hoje está espalhado entre `notebooks/` e `frente2/`, **sem mudar a lógica**: as funções foram copiadas dos originais, e as saídas de reviews são idênticas byte a byte às de `frente2/saidas/`.
+Versão organizada do tratamento de dados do Tech Challenge. Reúne em um só lugar o código dos originais, guardados em `exploracao/notebooks/` e `exploracao/frente2/`, **sem mudar a lógica**: as funções foram copiadas dos originais, e as saídas de reviews são idênticas byte a byte às de `exploracao/frente2/saidas/`.
 
 ## Estrutura
 
@@ -37,12 +37,12 @@ O pipeline tem duas etapas:
 
 | Etapa | Entrada | Saída | Origem do código |
 |---|---|---|---|
-| 1. Produtos | `raw/amazon.csv` | `amazon_sales_cleaned.csv` | `notebooks/TC4fase.ipynb` |
-| 2. Reviews | `amazon_sales_cleaned.csv` + `dicionario_temas.csv` | `fReviews.csv`, `fReviewTema.csv`, `sentimento_por_produto.csv` | `frente2/scripts/frente2_reviews.py` |
+| 1. Produtos | `raw/amazon.csv` | `amazon_sales_cleaned.csv` | `exploracao/notebooks/TC4fase.ipynb` |
+| 2. Reviews | `amazon_sales_cleaned.csv` + `dicionario_temas.csv` | `fReviews.csv`, `fReviewTema.csv`, `sentimento_por_produto.csv` | `exploracao/frente2/scripts/frente2_reviews.py` |
 
 A etapa 1 limpa preços, desconto, nota e quantidade de avaliações, separa a categoria em `categoria_1…7`, calcula `discount_amount` e deixa uma linha por produto (1.351 produtos).
 
-A etapa 2 separa os reviews em uma linha por produto × review, classifica o sentimento com o VADER e marca os temas. Detalhes da lógica, do dicionário de colunas e das limitações estão em [frente2/README.md](../frente2/README.md).
+A etapa 2 separa os reviews em uma linha por produto × review, classifica o sentimento com o VADER e marca os temas. Detalhes da lógica, do dicionário de colunas e das limitações estão em [exploracao/frente2/README.md](../exploracao/frente2/README.md).
 
 ## Para ajustar
 
@@ -54,4 +54,4 @@ A etapa 2 separa os reviews em uma linha por produto × review, classifica o sen
 - O notebook `TC4fase.ipynb` baixava a base pelo `kagglehub`. Aqui ela é lida de `data/raw/amazon.csv`, que é o mesmo arquivo já versionado no repositório.
 - Os caminhos fixos foram trocados por parâmetros, definidos em `src/config.py`.
 - A etapa de reviews lê o `amazon_sales_cleaned.csv` em vez do `amazon.csv`. O script original aceita os dois, e o resultado é o mesmo.
-- Os arquivos originais (`notebooks/`, `frente2/`, `data/`) continuam onde estavam.
+- Os arquivos originais foram mantidos sem alteração em `exploracao/` (`data/`, `notebooks/`, `frente2/`).
