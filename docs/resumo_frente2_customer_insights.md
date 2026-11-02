@@ -4,6 +4,8 @@ Este documento reúne o que a Frente 2 fez, o que descobriu e o que cada parte d
 
 **Em uma frase:** o cliente elogia o preço e a qualidade na hora da compra, mas se frustra quando o produto quebra e o pós-venda não resolve, e a nota média não mostra esse problema.
 
+Todos os números foram calculados a partir de `pipeline/data/processed/` com as mesmas regras das medidas do dashboard (`% Positivos`, `% Negativos`, `Saldo de Sentimento`, contando cada review uma vez só). Por isso, eles batem com o que aparece na página Customer Insights.
+
 ---
 
 ## 1. O que foi feito
@@ -21,10 +23,11 @@ Fonte do VADER: Hutto, C.J. & Gilbert, E.E. (2014). *VADER: A Parsimonious Rule-
 
 | Indicador | Valor |
 |---|---|
-| Reviews analisados | 9.263 únicos |
-| Positivos | 82,5% |
+| Reviews com texto analisados | 9.253 (de 9.263 únicos; 10 eram só foto) |
+| Positivos | 82,6% |
 | Negativos | 10,0% |
 | Neutros | 7,4% |
+| Saldo de sentimento | 0,73 |
 | Reviews que citam ao menos 1 tema | 66% |
 
 ## 3. Conclusões para a página Customer Insights
@@ -42,16 +45,24 @@ Fonte do VADER: Hutto, C.J. & Gilbert, E.E. (2014). *VADER: A Parsimonious Rule-
 - **Durabilidade e defeitos** é o assunto nº 1 das reclamações: está em **22%** dos reviews negativos.
 - **25%** dos reviews que citam durabilidade são negativos, mais que o dobro da média (10%).
 - **Atendimento e garantia** vem logo atrás, com **23%** de reviews negativos.
-- As reclamações de durabilidade se concentram em **controles remotos, aquecedores elétricos, power banks, liquidificadores e ferros de passar** (entre 4% e 6% dos reviews dessas subcategorias, contra 2% na média).
+- Entre as subcategorias com pelo menos 100 reviews, as reclamações de durabilidade se concentram em **controles remotos (5,6% dos reviews)**, **aquecedores elétricos (4,8%)** e **aquecedores com ventilador (4,1%)**, contra **2,2%** na média. Os números absolutos são pequenos (de 6 a 21 reviews por subcategoria), então isso é um sinal de atenção, e não uma prova. Esse detalhamento não aparece no dashboard (ver seção 5).
 
 > *"[Didn't] work even 3 months, as well as seller is not supporting in warranty."*
 > "[Não] funcionou nem 3 meses, e o vendedor não dá suporte na garantia." (aquecedor de água)
 
 ### Conclusão 3: a nota alta pode esconder problemas
 
-- **No geral, nota e texto concordam:** produtos com as notas mais baixas (até 3,9) têm **17%** de reviews negativos, e os com as notas mais altas (acima de 4,3) têm **6%**.
-- **Mas há exceções:** **99 produtos** têm nota igual ou acima da mediana (4,1) e **25% ou mais** de reviews negativos.
-- Exemplo: o fone **boAt Bassheads 225** tem nota 4,1 e 273 mil avaliações, mas 3 dos seus 8 reviews são reclamações.
+- **No geral, nota e texto concordam** (mesmas faixas do visual "Nota x sentimento"):
+
+  | Faixa de nota | Produtos | % negativos | Saldo de sentimento |
+  |---|---|---|---|
+  | Abaixo de 3,5 | 41 | 31,9% | 0,22 |
+  | 3,5 a 3,9 | 299 | 14,7% | 0,61 |
+  | 4,0 a 4,2 | 591 | 8,5% | 0,76 |
+  | 4,3 ou mais | 419 | 6,3% | 0,81 |
+
+- **Mas há exceções:** **34 produtos** têm nota 4,0 ou mais e saldo de sentimento de 0,25 ou menos. São os que aparecem na tabela "Alerta: nota alta, comentários ruins".
+- Exemplo: o fone **boAt Bassheads 225** tem nota 4,1 e 273 mil avaliações (o produto com mais avaliações da lista), mas 3 dos seus 8 reviews são reclamações.
 
 > *"Good buy but 1 side earphone stopped after 6-7 months."*
 > "Boa compra, mas um lado do fone parou depois de 6-7 meses." (fone boAt Bassheads 225)
@@ -62,39 +73,36 @@ Fonte do VADER: Hutto, C.J. & Gilbert, E.E. (2014). *VADER: A Parsimonious Rule-
 
 ### Dado disponível
 
-`pipeline/data/processed/sentimento_por_produto.csv`: uma linha por produto, com `pct_positivos`, `pct_negativos` e `saldo_sentimento` (de -1 a +1). Liga com a tabela de produtos pelo `product_id`.
+A tabela `sentimento_por_produto` já está no modelo do dashboard, ligada a `amazon_sales_cleaned` pelo `product_id`. As medidas `% Positivos`, `% Negativos` e `Saldo de Sentimento` (tabela `_Medidas`) funcionam com qualquer filtro de produto, categoria ou desconto.
 
 ### Conclusão 4: desconto maior não traz cliente mais satisfeito
 
-| Faixa de desconto | Produtos | Saldo de sentimento | % negativos |
+| Faixa de desconto | Produtos | % negativos | Saldo de sentimento |
 |---|---|---|---|
-| 0% a 20% | 176 | 0,75 | 8,6% |
-| 21% a 40% | 329 | 0,73 | 10,0% |
-| 41% a 60% | 469 | 0,71 | 10,7% |
-| Acima de 60% | 376 | 0,75 | 9,3% |
+| 0% a 20% | 176 | 8,4% | 0,75 |
+| 21% a 40% | 329 | 10,4% | 0,72 |
+| 41% a 60% | 469 | 10,4% | 0,72 |
+| Acima de 60% | 377 | 9,6% | 0,74 |
 
-O sentimento é praticamente o mesmo em todas as faixas (correlação entre desconto e saldo de sentimento: -0,02, ou seja, nenhuma relação).
+O sentimento é praticamente o mesmo em todas as faixas. A correlação entre desconto e saldo de sentimento por produto é -0,02, ou seja, nenhuma relação.
 
 ### Sugestões de recomendação
 
-1. **Revisar fornecedores e políticas de garantia** nas subcategorias com mais reclamações de durabilidade (controles remotos, aquecedores, power banks, liquidificadores e ferros de passar).
-2. **Usar o sentimento dos reviews como alerta precoce:** monitorar produtos com nota boa e muitas reclamações antes que a nota caia.
+1. **Revisar fornecedores e políticas de garantia** nas subcategorias com mais reclamações de durabilidade (controles remotos e aquecedores).
+2. **Usar o sentimento dos reviews como alerta precoce:** monitorar os produtos com nota boa e muitas reclamações (a tabela de alerta) antes que a nota caia.
 3. **Fortalecer o pós-venda:** atendimento e garantia têm mais que o dobro de reclamações da média.
 4. **Não usar desconto como alavanca de satisfação:** ele não muda a percepção do cliente sobre o produto.
 
-## 5. Para a página Customer Insights no Power BI
+## 5. Onde cada conclusão aparece no dashboard
 
-A página já cobre as conclusões 1 a 3. Dois ajustes sugeridos:
+| Conclusão | Visual da página Customer Insights |
+|---|---|
+| 1. O que o cliente valoriza | "O que os clientes valorizam" |
+| 2. O problema aparece depois da compra | "Do que os clientes reclamam" |
+| 3. A nota alta pode esconder problemas | "Nota x sentimento" e "Alerta: nota alta, comentários ruins" |
+| Trechos de reviews | "Trechos de reviews" |
 
-- **Subcategoria mais detalhada.** O visual "Sentimento por subcategoria" usa `categoria_2`, um nível amplo. Para mostrar onde estão os problemas de durabilidade, crie esta coluna calculada na tabela `amazon_sales_cleaned` e use-a no eixo:
-
-  ```
-  Subcategoria = PATHITEM(amazon_sales_cleaned[category], PATHLENGTH(amazon_sales_cleaned[category]))
-  ```
-
-  Ela pega o último nível da categoria (ex.: de `Home&Kitchen|Heating|ElectricHeaters`, devolve `ElectricHeaters`).
-
-- **Caixas de texto** com as três conclusões e os três trechos acima.
+O detalhamento por subcategoria da conclusão 2 (controles remotos e aquecedores) é um dado complementar da análise e não aparece no dashboard, que mostra o sentimento por `categoria_2`, um nível mais amplo. Se for citado no vídeo, deve ser apresentado como resultado da análise dos reviews.
 
 ## 6. Validação e limitações
 
